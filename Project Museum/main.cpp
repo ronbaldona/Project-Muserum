@@ -1,7 +1,8 @@
-#include "variables.h"
-#include <iostream>
-
 #define MAINPROGRAM
+#include "variables.h"
+
+#include <iostream>
+#include "TestTriangle.h"
 
 inline void initializeGLFWSettings() {
 	glfwInit();
@@ -11,8 +12,19 @@ inline void initializeGLFWSettings() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
 
-inline void initializeGLSettings() {
-	glClearColor(1.0f, 0, 0, 1.0f);
+inline bool initializeGLSettings() {
+	// Load OpenGL function ptrs
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		std::cerr << "Failed to initialize GLAD\n";
+		return false;
+	}
+
+	glClearColor(0.2f, 0.3f, 0, 1.0f);
+	return true;
+}
+
+inline void initializeShaders() {
+	testShader = new Shader("./testShader.vert", "./testShader.frag");
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int w, int h) {
@@ -28,6 +40,25 @@ inline GLFWwindow* createWindow(int x, int y) {
 	return window;
 }
 
+void render() {
+	TestTriangle tri;
+	tri.generateTriangle();
+	while (!glfwWindowShouldClose(window)) {
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		testShader->use();
+		glBindVertexArray(tri.VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+}
+
+void cleanUp() {
+	delete testShader;
+}
 
 int main(int argc, char * argv[]) {
 	// Initialize window settings
@@ -39,21 +70,16 @@ int main(int argc, char * argv[]) {
 		glfwTerminate();
 		return -1;
 	}
-	// Load OpenGL function ptrs
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+	if (!initializeGLSettings()) {
 		std::cerr << "Failed to initialize GLAD\n";
 		return -1;
 	}
-	initializeGLSettings();
-	if (!window)
-		return -1;
+	initializeShaders();
 	// Main window rendering loop
-	while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR_BUFFER_BIT);
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
+	render();
+	// Do cleanup
 	glfwTerminate();
+	cleanUp();
 
 	return 0;
 }

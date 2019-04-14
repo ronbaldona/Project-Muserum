@@ -1,24 +1,34 @@
 #pragma once
-#include "variables.h"
+#include <glad/glad.h>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
-/************************************* DELETE LATER ****************************************/
-const char *vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-const char *fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\n\0";
-/************************************* DELETE LATER ****************************************/
+class Shader {
+public:
+	unsigned int ID;
 
-void createShaders() {
-	vertShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertShader, 1, &vertexShaderSource, NULL);
+	Shader() {}
+	~Shader() {}
+	Shader(const GLchar* vertPath, const GLchar* fragPath);
 
-}
+	// Use the new shader program
+	void use();
+
+	// Shader state setter functions
+	void setBool(const std::string &name, bool val) const;
+	void setInt(const std::string &name, int val) const;
+	void setFloat(const std::string &name, float val) const;
+	void setMat3(const std::string &name, const glm::mat3 &val) const;
+	void setMat4(const std::string &name, const glm::mat4 &val) const;
+	void setVec3(const std::string &name, const glm::vec3 &val) const;
+	void setVec4(const std::string &name, const glm::vec4 &val) const;
+
+
+};

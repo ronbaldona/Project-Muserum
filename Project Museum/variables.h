@@ -5,6 +5,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Shader.h"
+
 typedef glm::mat3 mat3;
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -16,8 +18,11 @@ typedef glm::vec4 vec4;
 #define EXTERN extern 
 #endif
 
-EXTERN GLFWwindow* window = nullptr;
-EXTERN unsigned int vertShader;
-EXTERN unsigned int fragShader;
+//EXTERN unsigned int vertShader, fragShader, shaderProgram;
+EXTERN Shader* testShader;
 
-EXTERN int sizeX, sizeY;
+#ifdef MAINPROGRAM
+GLFWwindow* window = nullptr;
+#else
+EXTERN GLFWwindow* window;
+#endif
