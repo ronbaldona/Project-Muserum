@@ -13,6 +13,8 @@
 
 using glm::vec2;
 using glm::vec3;
+using glm::mat3;
+using glm::mat4;
 using namespace::std;
 
 struct Vertex {
@@ -23,7 +25,8 @@ struct Vertex {
 
 struct Texture {
 	unsigned int id;
-	std::string type;
+	string type;
+	string path;
 };
 
 class Mesh {
@@ -32,6 +35,7 @@ class Mesh {
 	void setupMesh();
 
 public:
+	mat4 model;
 	// Mesh data
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;

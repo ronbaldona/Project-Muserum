@@ -2,15 +2,8 @@
 #include "variables.h"
 
 #include <iostream>
+#include "Display.h"
 #include "TestTriangle.h"
-
-inline void initializeGLFWSettings() {
-	glfwInit();
-	// We will be working with OpenGL 3.3 Core
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-}
 
 inline bool initializeGLSettings() {
 	// Load OpenGL function ptrs
@@ -18,53 +11,47 @@ inline bool initializeGLSettings() {
 		std::cerr << "Failed to initialize GLAD\n";
 		return false;
 	}
-
-	glClearColor(0.2f, 0.3f, 0, 1.0f);
+	// Set depth test for 3D objects
+	//glEnable(GL_DEPTH_TEST);
+	//glDepthFunc(GL_LEQUAL);
+	// Set polygon drawing mode to fill front and back of 3d object
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	// Turn off backface culling for now
+	glDisable(GL_CULL_FACE);
+	glClearColor(0, 0, 0, 0);
 	return true;
 }
 
-inline void initializeShaders() {
-	testShader = new Shader("./testShader.vert", "./testShader.frag");
+void setUpCallBacks() {
+	// Set up callbacks
+	glfwSetKeyCallback(window, Display::key_callback);
+	glfwSetFramebufferSizeCallback(window, Display::resize_callback);
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int w, int h) {
-	glViewport(0, 0, w, h);
-}
 
-inline GLFWwindow* createWindow(int x, int y) {
-	GLFWwindow* window = glfwCreateWindow(x, y, "Test Window", NULL, NULL);
-	if (!window)
-		return nullptr;
-	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	return window;
-}
-
+// Fix later
 void render() {
-	TestTriangle tri;
-	tri.generateTriangle();
+	Model teapot = Model("teapot.obj");
+	testShader->use();
+	testShader->setMat4("modelview", viewMat);
+	testShader->setMat4("projection", projMat);
 	while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		testShader->use();
-		glBindVertexArray(tri.VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
+		teapot.Draw(*testShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 }
 
-void cleanUp() {
-	delete testShader;
-}
 
 int main(int argc, char * argv[]) {
-	// Initialize window settings
-	initializeGLFWSettings();
 	// Create a window
-	window = createWindow(800, 600);
+	// Initialize window settings
+	Display::setupGLFW();
+	window = Display::createWindow(width, height);
+	setUpCallBacks();
 	if (!window) {
 		std::cerr << "Failed to create window\n";
 		glfwTerminate();
@@ -74,12 +61,11 @@ int main(int argc, char * argv[]) {
 		std::cerr << "Failed to initialize GLAD\n";
 		return -1;
 	}
-	initializeShaders();
+	Display::resize_callback(window, width, height);
+	Display::initShaderPrograms();
 	// Main window rendering loop
 	render();
-	// Do cleanup
-	glfwTerminate();
-	cleanUp();
+	Display::cleanUp();
 
 	return 0;
 }

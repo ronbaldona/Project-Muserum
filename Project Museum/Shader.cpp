@@ -1,7 +1,6 @@
 #include "Shader.h"
 const int CHARBUFSIZ = 512;
 
-
 using glm::vec3;
 using glm::vec4;
 using glm::mat3;
@@ -79,11 +78,17 @@ Shader::Shader(const GLchar* vertPath, const GLchar* fragPath) {
 		glGetProgramInfoLog(ID, CHARBUFSIZ, NULL, infoLog);
 		cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << endl;
 	}
-	// Delete shader
+	// Detach and delete shader
+	glDetachShader(ID, vertID);
+	glDetachShader(ID, fragID);
 	glDeleteShader(vertID);
 	glDeleteShader(fragID);
 	delete[] vertShaderCode;
 	delete[] fragShaderCode;
+}
+
+Shader::~Shader() {
+	glDeleteProgram(ID);
 }
 
 void Shader::use() {

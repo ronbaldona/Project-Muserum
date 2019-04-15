@@ -1,146 +1,83 @@
-/*****************************************************************************/
-/* This is the program skeleton for homework 2 in CSE167 by Ravi Ramamoorthi */
-/* Extends HW 1 to deal with shading, more transforms and multiple objects   */
-/*****************************************************************************/
+#include "Display.h"
 
-// This file is display.cpp.  It includes the skeleton for the display routine
 
-// Basic includes to get this file to work.  
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <deque>
-#include <stack>
-#include <GL/glew.h>
-#include <GL/glut.h>
-#include "Transform.h"
-#include "Geometry.h"
-
-using namespace std; 
-#include "variables.h"
-#include "readfile.h"
-
-// New helper transformation function to transform vector by modelview 
-// May be better done using newer glm functionality.
-// Provided for your convenience.  Use is optional.  
-// Some of you may want to use the more modern routines in readfile.cpp 
-// that can also be used.  
-void transformvec (const GLfloat input[4], GLfloat output[4]) 
-{
-	glm::vec4 inputvec(input[0], input[1], input[2], input[3]);
-
-	glm::vec4 outputvec = modelview * inputvec;
-
-	output[0] = outputvec[0];
-
-	output[1] = outputvec[1];
-
-	output[2] = outputvec[2];
-
-	output[3] = outputvec[3];
+GLFWwindow* Display::createWindow(int x, int y) {
+	//glfwInit();
+	GLFWwindow* window = glfwCreateWindow(x, y, "Test Window", NULL, NULL);
+	if (!window)
+		return nullptr;
+	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, Display::resize_callback);
+	//resize_callback(window, x, y);
+	return window;
+}
+void Display::setupGLFW() {
+	glfwInit();
+	// We will be working with OpenGL 3.3 Core
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
 
-void display() 
-{
-  glClearColor(0, 0, 1, 0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void Display::init_objects() {
 
-  // Set up the camera view
-  // Either use the built-in lookAt function or the lookAt implemented by the user.
-  if (useGlu) {
-    modelview = glm::lookAt(eye,center,up); 
-  } else {
-    modelview = Transform::lookAt(eye,center,up); 
-  }
+}
 
-  glUniformMatrix4fv(modelviewPos, 1, GL_FALSE, &modelview[0][0]);
+void Display::initShaderPrograms() {
+	testShader = new Shader("./testShader.vert", "./testShader.frag");
 
-  // Lights are transformed by current modelview matrix. 
-  // The shader can't do this globally. 
-  // So we need to do so manually.  
-  if (numused) {
-    glUniform1i(enablelighting,true);
+}
 
-    // YOUR CODE FOR HW 2 HERE.  
-    // You need to pass the light positions and colors to the shader. 
-    // glUniform4fv() and similar functions will be useful. See FAQ for help with these functions.
-    // The lightransf[] array in variables.h and transformvec() might also be useful here.
-    // Remember that light positions must be transformed by modelview.  
+void Display::cleanUp() {
+	delete testShader;
 
-	// Transform light positions
-	for (int i = 0; i < numused; i++) {
-		vec4 currVec(lightposn[i * 4], lightposn[(i * 4) + 1], lightposn[(i * 4) + 2], lightposn[(i * 4) + 3]);
-		currVec = modelview * currVec;
-		lightransf[i * 4] = currVec[0];
-		lightransf[(i * 4) + 1] = currVec[1];
-		lightransf[(i * 4) + 2] = currVec[2];
-		lightransf[(i * 4) + 3] = currVec[3];
+	glfwTerminate();
+}
+
+void Display::resize_callback(GLFWwindow* window, int w, int h) {
+	width = w;
+	height = h;
+	glViewport(0, 0, width, height);
+	if (height > 0) {
+		projMat = glm::perspective(glm::radians(fovY), (float)width / (float)height, 0.1f, 1000.0f);
+		viewMat = glm::lookAt(camPos, camLookAt, camUp);
 	}
+}
 
-	// Pass relevant params to shader
-	vec4 temp = modelview * vec4(eye, 1.0f);
-	vec3 transf_eyeloc = vec3(temp.x / temp.w, temp.y / temp.w, temp.z / temp.w);
-	glUniform4fv(lightpos, numused, &lightransf[0]);
-	glUniform4fv(lightcol, numused, &lightcolor[0]);
-	glUniform3fv(glGetUniformLocation(shaderprogram, "eyepos"), 1, &(transf_eyeloc)[0]);
-	glUniform1iv(glGetUniformLocation(shaderprogram, "lightType"), numused, &lightType[0]);
-	glUniform1i(numusedcol, numused);
+void Display::idle_callback() {
 
-  } else {
-    glUniform1i(enablelighting,false); 
-  }
+}
 
-  // Transformations for objects, involving translation and scaling 
-  mat4 sc(1.0) , tr(1.0), transf(1.0); 
-  sc = Transform::scale(sx,sy,1.0); 
-  tr = Transform::translate(tx,ty,0.0); 
+void Display::display_callback(GLFWwindow* window) {
+	// Clear color and depth buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glUniform4fv(glGetUniformLocation(testShader->ID, "projection"), 1, &projMat[0][0]);
 
-  // YOUR CODE FOR HW 2 HERE.  
-  // You need to use scale, translate and modelview to 
-  // set up the net transformation matrix for the objects.  
-  // Account for GLM issues, matrix order (!!), etc. 
-  transf = modelview * tr * sc;
+	// Render object here
 
-  // The object draw functions will need to further modify the top of the stack,
+}
 
-  // so assign whatever transformation matrix you intend to work with to modelview
+void Display::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	// Check for a key press
+	if (action == GLFW_PRESS || action == GLFW_REPEAT)
+	{
+		// Check if escape was pressed
+		if (key == GLFW_KEY_ESCAPE)
+		{
+			// Close the window. This causes the program to also terminate.
+			glfwSetWindowShouldClose(window, GL_TRUE);
+		}
+	}
+}
 
-  // rather than use a uniform variable for that.
-  modelview = transf;
-  
-  for (int i = 0 ; i < numobjects ; i++) {
-    object* obj = &(objects[i]); // Grabs an object struct.
+void Display::mouse_callback(GLFWwindow* window, int button, int action, int mods) {
 
-    // YOUR CODE FOR HW 2 HERE. 
-    // Set up the object transformations 
-    // And pass in the appropriate material properties
-    // Again glUniform() related functions will be useful
-	transf = modelview;
-	modelview = modelview * obj->transform;
+}
 
-	glUniform4fv(ambientcol, 1, &(obj->ambient)[0]);
-	glUniform4fv(diffusecol, 1, &(obj->diffuse)[0]);
-	glUniform4fv(specularcol, 1, &(obj->specular)[0]);
-	glUniform4fv(emissioncol, 1, &(obj->emission)[0]);
-	glUniform1f(shininesscol, obj->shininess);
+void Display::cursor_callback(GLFWwindow* window, double xpos, double ypos) {
 
-    // Actually draw the object
-    // We provide the actual drawing functions for you.  
-    // Remember that obj->type is notation for accessing struct fields
-    if (obj->type == cube) {
-      solidCube(obj->size); 
-    }
-    else if (obj->type == sphere) {
-      const int tessel = 20; 
-      solidSphere(obj->size, tessel, tessel); 
-    }
-    else if (obj->type == teapot) {
-      solidTeapot(obj->size); 
-    }
-	modelview = transf;
-	
-  }
-  
-  glutSwapBuffers();
+}
+
+void Display::scroll_callback(GLFWwindow* window, double xoffeset, double yoffset) {
+
 }

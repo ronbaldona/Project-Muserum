@@ -15,7 +15,7 @@ public:
 	unsigned int ID;
 
 	Shader() {}
-	~Shader() {}
+	~Shader();
 	Shader(const GLchar* vertPath, const GLchar* fragPath);
 
 	// Use the new shader program
@@ -29,6 +29,4 @@ public:
 	void setMat4(const std::string &name, const glm::mat4 &val) const;
 	void setVec3(const std::string &name, const glm::vec3 &val) const;
 	void setVec4(const std::string &name, const glm::vec4 &val) const;
-
-
 };

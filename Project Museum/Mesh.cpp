@@ -1,6 +1,7 @@
 #include "Mesh.h"
 
 Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture>textures) {
+	model = mat4(1.0f);
 	this->vertices = vertices;
 	this->indices = indices;
 	this->textures = textures;
