@@ -12,8 +12,8 @@ inline bool initializeGLSettings() {
 		return false;
 	}
 	// Set depth test for 3D objects
-	//glEnable(GL_DEPTH_TEST);
-	//glDepthFunc(GL_LEQUAL);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 	// Set polygon drawing mode to fill front and back of 3d object
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	// Turn off backface culling for now
@@ -33,8 +33,6 @@ void setUpCallBacks() {
 void render() {
 	Model teapot = Model("teapot.obj");
 	testShader->use();
-	testShader->setMat4("modelview", viewMat);
-	testShader->setMat4("projection", projMat);
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -51,12 +49,12 @@ int main(int argc, char * argv[]) {
 	// Initialize window settings
 	Display::setupGLFW();
 	window = Display::createWindow(width, height);
-	setUpCallBacks();
 	if (!window) {
 		std::cerr << "Failed to create window\n";
 		glfwTerminate();
 		return -1;
 	}
+	setUpCallBacks();
 	if (!initializeGLSettings()) {
 		std::cerr << "Failed to initialize GLAD\n";
 		return -1;

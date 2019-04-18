@@ -83,7 +83,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 		vector.x = mesh->mNormals[i].x;
 		vector.y = mesh->mNormals[i].y;
 		vector.z = mesh->mNormals[i].z;
-		vertex.Normal = vector;
+		vertex.Normal = glm::normalize(vector);
 
 		if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
 		{
@@ -150,6 +150,8 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 }
 
 void Model::Draw(Shader shader) {
+	shader.setMat4("modelview", viewMat);
+	shader.setMat4("projection", projMat);
 	for (unsigned int i = 0; i < meshes.size(); i++)
 		meshes[i].Draw(shader);
 }

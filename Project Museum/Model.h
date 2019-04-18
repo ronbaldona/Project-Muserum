@@ -4,6 +4,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "variables.h"
 #include "Mesh.h"
 class Model
 {
