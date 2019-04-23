@@ -7,6 +7,7 @@
 
 #include "Shader.h"
 #include "Model.h"
+#include "Light.h"
 
 typedef glm::mat3 mat3;
 typedef glm::mat4 mat4;
@@ -26,6 +27,8 @@ EXTERN mat4 viewMat;
 
 #ifdef MAINPROGRAM
 GLFWwindow* window = nullptr;
+Model* teapot = nullptr;
+Light* light = nullptr;
 unsigned int width = 800;
 unsigned int height = 600;
 float fovY = 90.0f;
@@ -34,6 +37,8 @@ vec3 camLookAt(0.0f, 0.0f, 0.0f);
 vec3 camUp(0.0f, 1.0f, 0.0f);
 #else
 EXTERN GLFWwindow* window;
+EXTERN Model* teapot;
+EXTERN Light* light;
 EXTERN unsigned int width, height;
 EXTERN float fovY;
 EXTERN vec3 camPos;

@@ -3,7 +3,8 @@
 
 #include <iostream>
 #include "Display.h"
-#include "TestTriangle.h"
+
+extern enum lightType;
 
 inline bool initializeGLSettings() {
 	// Load OpenGL function ptrs
@@ -18,7 +19,7 @@ inline bool initializeGLSettings() {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	// Turn off backface culling for now
 	glDisable(GL_CULL_FACE);
-	glClearColor(0, 0, 0, 0);
+	glClearColor(0, 0, 1.0f, 0);
 	return true;
 }
 
@@ -29,14 +30,25 @@ void setUpCallBacks() {
 }
 
 
-// Fix later
+// Replace with window rendering
 void render() {
-	Model teapot = Model("teapot.obj");
+	teapot = new Model("teapot.obj");
+	light = new Light(DIRECTIONAL, glm::normalize(-vec3(0.5f, 0.5f, 0.5f)), vec3(1.0f, 1.0f, 1.0f));
 	testShader->use();
+	teapot->setMaterials(vec4(0.24725f, 0.2245f, 0.0645f, 1.0f),
+						 vec4(0.34615f, 0.3143f, 0.0903f, 1.0f),
+						 vec4(0.797357f, 0.723991f, 0.208006f, 1.0f),
+						 vec4(0.0f, 0.0f, 0.0f, 0.0f),
+						 83.2f, *testShader);
+	light->sendLightInfo(*testShader);
+	testShader->setVec3("eyeloc", camPos);
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		teapot.Draw(*testShader);
+		Display::idle_callback();
+		testShader->setMat4("modelview", viewMat * teapot->model);
+		testShader->setMat4("projection", projMat);
+		testShader->setMat4("model", teapot->model);
+		teapot->Draw(*testShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

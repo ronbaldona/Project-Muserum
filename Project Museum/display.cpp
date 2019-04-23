@@ -8,7 +8,6 @@ GLFWwindow* Display::createWindow(int x, int y) {
 		return nullptr;
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, Display::resize_callback);
-	//resize_callback(window, x, y);
 	return window;
 }
 void Display::setupGLFW() {
@@ -30,6 +29,8 @@ void Display::initShaderPrograms() {
 
 void Display::cleanUp() {
 	delete testShader;
+	delete teapot;
+	delete light;
 
 	glfwTerminate();
 }
@@ -45,13 +46,12 @@ void Display::resize_callback(GLFWwindow* window, int w, int h) {
 }
 
 void Display::idle_callback() {
-
+	teapot->rotate(1.0f, vec3(0, 1.0f, 0));
 }
 
 void Display::display_callback(GLFWwindow* window) {
 	// Clear color and depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glUniform4fv(glGetUniformLocation(testShader->ID, "projection"), 1, &projMat[0][0]);
 
 	// Render object here
 

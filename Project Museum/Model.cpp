@@ -37,7 +37,7 @@ GLint TextureFromFile(const char* path, string directory)
 
 void Model::loadModel(string path) {
 	Assimp::Importer import;
-	const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+	const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -149,9 +149,83 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 	return textures;
 }
 
+void Model::setMaterials(vec4 ambient, vec4 diffuse, vec4 specular, vec4 emission, float shininess, Shader shader) {
+	shader.setVec4("ambient", ambient);
+	shader.setVec4("diffuse", diffuse);
+	shader.setVec4("specular", specular);
+	shader.setVec4("emission", emission);
+	shader.setFloat("shininess", shininess);
+}
+
+
+void Model::translate(const float &tx, const float &ty, const float &tz) {
+	mat4 transMat = mat4(1, 0, 0, 0,
+			  		     0, 1, 0, 0,
+						 0, 0, 1, 0,
+						 tx, ty, tz, 1);
+	model = model * transMat;
+
+}
+void Model::translate(const vec3 &tvec) {
+	mat4 transMat = mat4(1, 0, 0, 0,
+						 0, 1, 0, 0,
+						 0, 0, 1, 0,
+						 tvec.x, tvec.y, tvec.z, 1);
+	model = model * transMat;
+
+}
+void Model::scale(const float &sx, const float &sy, const float &sz) {
+	mat4 scaleMat = mat4(sx, 0, 0, 0,
+						 0, sy, 0, 0,
+						 0, 0, sz, 0,
+						 0, 0, 0, 1);
+	model = scaleMat * model;
+
+}
+void Model::scale(const vec3 &svec) {
+	mat4 scaleMat = mat4(svec.x, 0, 0, 0,
+						 0, svec.y, 0, 0,
+						 0, 0, svec.z, 0,
+						 0, 0, 0, 1);
+	model = scaleMat * model;
+}
+void Model::rotate(const float degrees, const float ax, const float ay, const float az) {
+	float rad = glm::radians(degrees);
+	mat3 a_star = mat3(0, az, -ay,
+					   -az, 0, ax,
+					   ay, -ax, 0);
+	mat3 a_at = mat3(ax * ax, ax * ay, ax * az,
+					 ax * ay, ay * ay, ay * az,
+					 ax * az, ay * az, az * az);
+	mat3 tempRot = (cos(rad) * mat3()) + (a_at * (1 - cos(rad))) + (sin(rad) * a_star);
+
+	mat4 rotMat = mat4(tempRot[0][0], tempRot[0][1], tempRot[0][2], 0,
+					   tempRot[1][0], tempRot[1][1], tempRot[1][2], 0,
+					   tempRot[2][0], tempRot[2][1], tempRot[2][2], 0,
+					   0, 0, 0, 1);
+	model = model * rotMat;
+
+}
+void Model::rotate(const float degrees, const vec3 & axis) {
+	float rad = glm::radians(degrees);
+	mat3 a_star = mat3(0, axis[2], -axis[1],
+					   -axis[2], 0, axis[0],
+					   axis[1], -axis[0], 0);
+	mat3 a_at = mat3(axis[0] * axis[0], axis[0] * axis[1], axis[0] * axis[2],
+					 axis[0] * axis[1], axis[1] * axis[1], axis[1] * axis[2],
+					 axis[0] * axis[2], axis[1] * axis[2], axis[2] * axis[2]);
+
+
+	mat3 tempRot = (cos(rad) * mat3()) + (a_at * (1 - cos(rad))) + (sin(rad) * a_star);
+	mat4 rotMat = mat4(tempRot[0][0], tempRot[0][1], tempRot[0][2], 0,
+					   tempRot[1][0], tempRot[1][1], tempRot[1][2], 0,
+					   tempRot[2][0], tempRot[2][1], tempRot[2][2], 0,
+					   0, 0, 0, 1);
+	model = model * rotMat;
+}
+
+
 void Model::Draw(Shader shader) {
-	shader.setMat4("modelview", viewMat);
-	shader.setMat4("projection", projMat);
 	for (unsigned int i = 0; i < meshes.size(); i++)
 		meshes[i].Draw(shader);
 }

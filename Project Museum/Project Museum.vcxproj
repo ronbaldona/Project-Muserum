@@ -129,19 +129,18 @@
   <ItemGroup>
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Display.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="TestTriangle.h" />
-    <ClInclude Include="Transform.h" />
     <ClInclude Include="variables.h" />
   </ItemGroup>
   <ItemGroup>
