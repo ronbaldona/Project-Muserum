@@ -149,14 +149,21 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 	return textures;
 }
 
-void Model::setMaterials(vec4 ambient, vec4 diffuse, vec4 specular, vec4 emission, float shininess, Shader shader) {
-	shader.setVec4("ambient", ambient);
-	shader.setVec4("diffuse", diffuse);
-	shader.setVec4("specular", specular);
-	shader.setVec4("emission", emission);
-	shader.setFloat("shininess", shininess);
+void Model::setMaterials(vec4 ambient, vec4 diffuse, vec4 specular, vec4 emission, float shininess) {
+	material.ambient = ambient;
+	material.diffuse = diffuse;
+	material.specular = specular;
+	material.emission = emission;
+	material.shininess = shininess;
 }
 
+void Model::sendMaterialInfo(Shader shader) const {
+	shader.setVec4("material.ambient", material.ambient);
+	shader.setVec4("material.diffuse", material.diffuse);
+	shader.setVec4("material.specular", material.specular);
+	shader.setVec4("material.emission", material.emission);
+	shader.setFloat("material.shininess", material.shininess);
+}
 
 void Model::translate(const float &tx, const float &ty, const float &tz) {
 	mat4 transMat = mat4(1, 0, 0, 0,

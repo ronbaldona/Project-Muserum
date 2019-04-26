@@ -19,6 +19,7 @@ class Model
 	vector<Mesh> meshes;
 	vector<Texture> textures_loaded;
 	string directory;
+	Materials material;
 
 	void loadModel(string path);
 	void processNode(aiNode *node, const aiScene *scene);
@@ -34,7 +35,8 @@ public:
 		model = mat4(1.0f);
 		loadModel(path);
 	}
-	void setMaterials(vec4 ambient, vec4 diffuse, vec4 specular, vec4 emission, float shininess, Shader shader);
+	void setMaterials(vec4 ambient, vec4 diffuse, vec4 specular, vec4 emission, float shininess);
+	void sendMaterialInfo(Shader shader) const;
 	void translate(const float &tx, const float &ty, const float &tz);
 	void translate(const vec3 &tvec);
 	void scale(const float &sx, const float &sy, const float &sz);

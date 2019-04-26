@@ -28,7 +28,9 @@ EXTERN mat4 viewMat;
 #ifdef MAINPROGRAM
 GLFWwindow* window = nullptr;
 Model* teapot = nullptr;
-Light* light = nullptr;
+Light* dirLight = nullptr;
+Light* pntLight = nullptr;
+Light* spotlight = nullptr;
 unsigned int width = 800;
 unsigned int height = 600;
 float fovY = 90.0f;
@@ -38,7 +40,9 @@ vec3 camUp(0.0f, 1.0f, 0.0f);
 #else
 EXTERN GLFWwindow* window;
 EXTERN Model* teapot;
-EXTERN Light* light;
+EXTERN Light* dirLight;
+EXTERN Light* pntLight;
+EXTERN Light* spotlight;
 EXTERN unsigned int width, height;
 EXTERN float fovY;
 EXTERN vec3 camPos;

@@ -9,7 +9,6 @@ public:
 	static GLFWwindow* createWindow(int x, int y);
 	static void setupGLFW();
 	static void init_objects();
-	static void initShaderPrograms();
 	static void cleanUp();
 	static void resize_callback(GLFWwindow* window, int w, int h);
 	static void idle_callback();

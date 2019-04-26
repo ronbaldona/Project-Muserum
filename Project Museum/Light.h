@@ -9,25 +9,26 @@ enum lightType { DIRECTIONAL = 0, PNT = 1, SPOTLIGHT = 2 };
 
 class Light {
 	lightType type;
-	vec3 color, position, direction, attenuation;
+	vec4 color, position, direction;
+	vec3 attenuation;
 	float phi;
 
 public:
 	// Directional
-	Light(lightType lt, vec3 dir, vec3 col) {
+	Light(lightType lt, vec4 dir, vec4 col) {
 		type = lt;
 		direction = -dir;
 		color = col;
 	}
 	// Point
-	Light(lightType lt, vec3 pos, vec3 atten, vec3 col) {
+	Light(lightType lt, vec4 pos, vec3 atten, vec4 col) {
 		type = lt;
 		position = pos;
 		attenuation = atten;
 		color = col;
 	}
 	// Spotlight
-	Light(lightType lt, vec3 pos, vec3 dir, vec3 atten, vec3 col, float angle) {
+	Light(lightType lt, vec4 pos, vec4 dir, vec3 atten, vec4 col, float angle) {
 		type = lt;
 		position = pos;
 		direction = -dir;

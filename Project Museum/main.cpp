@@ -4,7 +4,7 @@
 #include <iostream>
 #include "Display.h"
 
-extern enum lightType;
+enum lightType;
 
 inline bool initializeGLSettings() {
 	// Load OpenGL function ptrs
@@ -29,18 +29,18 @@ void setUpCallBacks() {
 	glfwSetFramebufferSizeCallback(window, Display::resize_callback);
 }
 
-
+/*
 // Replace with window rendering
 void render() {
 	teapot = new Model("teapot.obj");
-	light = new Light(DIRECTIONAL, glm::normalize(-vec3(0.5f, 0.5f, 0.5f)), vec3(1.0f, 1.0f, 1.0f));
+	dirLight = new Light(DIRECTIONAL, glm::normalize(-vec3(0.5f, 0.5f, 0.5f)), vec3(1.0f, 1.0f, 1.0f));
 	testShader->use();
 	teapot->setMaterials(vec4(0.24725f, 0.2245f, 0.0645f, 1.0f),
 						 vec4(0.34615f, 0.3143f, 0.0903f, 1.0f),
 						 vec4(0.797357f, 0.723991f, 0.208006f, 1.0f),
 						 vec4(0.0f, 0.0f, 0.0f, 0.0f),
 						 83.2f, *testShader);
-	light->sendLightInfo(*testShader);
+	dirLight->sendLightInfo(*testShader);
 	testShader->setVec3("eyeloc", camPos);
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -54,7 +54,7 @@ void render() {
 		glfwPollEvents();
 	}
 }
-
+*/
 
 int main(int argc, char * argv[]) {
 	// Create a window
@@ -72,9 +72,9 @@ int main(int argc, char * argv[]) {
 		return -1;
 	}
 	Display::resize_callback(window, width, height);
-	Display::initShaderPrograms();
+	Display::init_objects();
 	// Main window rendering loop
-	render();
+	Display::display_callback(window);
 	Display::cleanUp();
 
 	return 0;
