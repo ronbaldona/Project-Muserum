@@ -29,6 +29,7 @@ uniform Material material;
 
 // Use this to transform light to object space (direction too?)
 uniform mat4 modelview;
+uniform mat4 view;
 
 // Other constants
 const float PI = 3.14159265359f;
@@ -58,40 +59,33 @@ void main (void)
 	vec3 normal = normalize(myNormal);
 	vec4 finalColor = vec4(0, 0, 0, 0);
 	if (light.type == DIRECTIONAL) {
-		// CHECK THIS FOR MISTAKES
-		vec3 transfPos = vec3(modelview * light.direction);
-		finalColor = computeLight(eyePos, vertPos, normalize(transfPos), normal);
+		vec3 transfDir = vec3(view * light.direction);
+		finalColor = computeLight(eyePos, vertPos, normalize(transfDir), normal);
+		//fragColor = vec4(myNormal, 1.0f);
+		//return;
 	}
-	else if (light.type == POINT) {
-		float attenuationConst;
-		vec4 transfLightPos = modelview * light.position;
-		vec3 vecToLight = (transfLightPos.xyz / transfLightPos.w) - (myVertex.xyz / myVertex.w);
-		float distToLight = length(vecToLight);
-		attenuationConst = 1.0f / (light.attenuation[0] + 
-								   light.attenuation[1] * distToLight +
-								   light.attenuation[2] * distToLight * distToLight);
-		vecToLight = normalize(vecToLight);
-		
-		finalColor = attenuationConst * computeLight(eyePos, vertPos, vecToLight, normal);
-	}
-	// Spotlight where vertex lies inside spotlight coverage
 	else {
 		float attenuationConst;
-		vec4 transfLightPos = modelview * light.position;
+		vec4 transfLightPos = view * light.position;
 		vec3 vecToLight = (transfLightPos.xyz / transfLightPos.w) - (myVertex.xyz / myVertex.w);
 		float distToLight = length(vecToLight);
 		attenuationConst = 1.0f / (light.attenuation[0] + 
 								   light.attenuation[1] * distToLight +
 								   light.attenuation[2] * distToLight * distToLight);
 		vecToLight = normalize(vecToLight);
+		//fragColor = vec4(myNormal, 1.0f);
+		//return;
+
 		// CHECK THIS ONE FOR CORRECTNESS
 		// Fragment position lies inside lighting
-		if (cos(light.phi) > dot(vecToLight, light.direction.xyz / light.direction.w)) {
-			finalColor = attenuationConst * computeLight(eyePos, vertPos, vecToLight, normal);						
+		if (light.type == SPOTLIGHT) {
+			vec3 spotDir = normalize(vec3(view * -light.direction));
+			if (cos(light.phi) < dot(-vecToLight, spotDir))
+				finalColor = attenuationConst * computeLight(eyePos, vertPos, vecToLight, normal);
 		}
-			
+		else 
+			finalColor = attenuationConst * computeLight(eyePos, vertPos, vecToLight, normal);
 	}
-
 	fragColor = material.ambient + material.emission + finalColor;
 	//fragColor = vec4(myNormal, 1.0f);
 }

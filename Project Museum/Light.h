@@ -8,6 +8,7 @@ using glm::vec4;
 enum lightType { DIRECTIONAL = 0, PNT = 1, SPOTLIGHT = 2 };
 
 class Light {
+	// Model lightModel;
 	lightType type;
 	vec4 color, position, direction;
 	vec3 attenuation;
@@ -34,7 +35,7 @@ public:
 		direction = -dir;
 		attenuation = atten;
 		color = col;
-		phi = angle;
+		phi = glm::radians(angle);
 	}
 
 	void sendLightInfo(Shader &shader);

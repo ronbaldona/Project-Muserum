@@ -14,7 +14,7 @@ void Light::sendLightInfo(Shader &shader) {
 
 	}
 	else {
-		shader.setInt("type", 2);
+		shader.setInt("light.type", 2);
 		shader.setVec4("light.position", position);
 		shader.setVec4("light.direction", direction);
 		shader.setVec3("light.attenuation", attenuation);

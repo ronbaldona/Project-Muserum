@@ -30,7 +30,19 @@ void Display::init_objects() {
 						 83.2f);
 	
 	// Init lights and their properties
-	dirLight = new Light(DIRECTIONAL, glm::normalize(-vec4(0.5f, 0.5f, 0.5f, 0)), vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	dirLight = new Light(DIRECTIONAL, 
+		                 glm::normalize(vec4(-0.5f, -0.5f, -0.5f, 0)), 
+		                 vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	pntLight = new Light(PNT, 
+						 vec4(-0.1f, 0.7f, 1.0f, 1.0f), 
+						 vec3(1.0f, 0.5f, 0.1f), 
+						 vec4(0.1f, 0.2f, 0.8f, 1.0f));
+	spotlight = new Light(SPOTLIGHT, 
+						 vec4(0, 5.0f, 0, 1.0f), 
+						 glm::normalize(vec4(0, -1.0f, 0, 0)),
+						 vec3(1.0f, 0.5f, 0.1f),
+						 vec4(1.0f, 1.0f, 1.0f, 1.0f),
+						 glm::radians(45.0f));
 
 	// Init shader
 	testShader = new Shader("./testShader.vert", "./testShader.frag");
@@ -40,7 +52,7 @@ void Display::cleanUp() {
 	delete testShader;
 	delete teapot;
 
-	delete dirLight;
+	delete dirLight, pntLight, spotlight;
 
 	glfwTerminate();
 }
@@ -63,11 +75,14 @@ void Display::idle_callback() {
 void Display::display_callback(GLFWwindow* window) {
 	testShader->use();
 	teapot->sendMaterialInfo(*testShader);
-	dirLight->sendLightInfo(*testShader);
+	//dirLight->sendLightInfo(*testShader);
+	//pntLight->sendLightInfo(*testShader);
+	spotlight->sendLightInfo(*testShader);
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		Display::idle_callback();
 		testShader->setMat4("modelview", viewMat * teapot->model);
+		testShader->setMat4("view", viewMat);
 		testShader->setMat4("projection", projMat);
 		//testShader->setMat4("model", teapot->model);
 		testShader->setVec3("eyeloc", camPos);
