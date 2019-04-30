@@ -61,28 +61,26 @@ void main (void)
 	if (light.type == DIRECTIONAL) {
 		vec3 transfDir = vec3(view * light.direction);
 		finalColor = computeLight(eyePos, vertPos, normalize(transfDir), normal);
-		//fragColor = vec4(myNormal, 1.0f);
-		//return;
 	}
+	// Point light and spotlight
 	else {
 		float attenuationConst;
 		vec4 transfLightPos = view * light.position;
-		vec3 vecToLight = (transfLightPos.xyz / transfLightPos.w) - (myVertex.xyz / myVertex.w);
+		vec3 vecToLight = (transfLightPos.xyz / transfLightPos.w) - vertPos;
 		float distToLight = length(vecToLight);
 		attenuationConst = 1.0f / (light.attenuation[0] + 
 								   light.attenuation[1] * distToLight +
 								   light.attenuation[2] * distToLight * distToLight);
 		vecToLight = normalize(vecToLight);
-		//fragColor = vec4(myNormal, 1.0f);
-		//return;
 
-		// CHECK THIS ONE FOR CORRECTNESS
-		// Fragment position lies inside lighting
+		// Spotlight lighting
 		if (light.type == SPOTLIGHT) {
-			vec3 spotDir = normalize(vec3(view * -light.direction));
-			if (cos(light.phi) < dot(-vecToLight, spotDir))
+			vec3 spotDir = normalize(vec3(view * light.direction));
+			if (light.phi < dot(vecToLight, spotDir)) {
 				finalColor = attenuationConst * computeLight(eyePos, vertPos, vecToLight, normal);
+			}
 		}
+		// Point light based lighting
 		else 
 			finalColor = attenuationConst * computeLight(eyePos, vertPos, vecToLight, normal);
 	}

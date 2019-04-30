@@ -12,9 +12,9 @@ class Light {
 	lightType type;
 	vec4 color, position, direction;
 	vec3 attenuation;
-	float phi;
 
 public:
+	float phi;
 	// Directional
 	Light(lightType lt, vec4 dir, vec4 col) {
 		type = lt;

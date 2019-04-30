@@ -2,6 +2,7 @@
 
 // State variables
 bool doRotate = false;
+bool doRotateLeft = false;
 
 
 GLFWwindow* Display::createWindow(int x, int y) {
@@ -38,11 +39,11 @@ void Display::init_objects() {
 						 vec3(1.0f, 0.5f, 0.1f), 
 						 vec4(0.1f, 0.2f, 0.8f, 1.0f));
 	spotlight = new Light(SPOTLIGHT, 
-						 vec4(0, 5.0f, 0, 1.0f), 
-						 glm::normalize(vec4(0, -1.0f, 0, 0)),
+						 vec4(-1.0f, 1.0f, 1.0f, 1.0f), 
+						 glm::normalize(vec4(1.0f, -1.0f, -1.0f, 0)),
 						 vec3(1.0f, 0.5f, 0.1f),
 						 vec4(1.0f, 1.0f, 1.0f, 1.0f),
-						 glm::radians(45.0f));
+						 15.0f);
 
 	// Init shader
 	testShader = new Shader("./testShader.vert", "./testShader.frag");
@@ -68,8 +69,14 @@ void Display::resize_callback(GLFWwindow* window, int w, int h) {
 }
 
 void Display::idle_callback() {
-	if (doRotate)
-		teapot->rotate(1.0f, vec3(0, 1.0f, 0));
+	if (doRotate) {
+		if (doRotateLeft)
+			teapot->rotate(1.0f, vec3(0, 1.0f, 0));
+		// Rotate up
+		else
+			teapot->rotate(1.0f, vec3(1.0f, 0, 0));
+
+	}
 }
 
 void Display::display_callback(GLFWwindow* window) {
@@ -87,6 +94,7 @@ void Display::display_callback(GLFWwindow* window) {
 		//testShader->setMat4("model", teapot->model);
 		testShader->setVec3("eyeloc", camPos);
 		teapot->Draw(*testShader);
+		//cout << spotlight->phi << endl;
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -103,8 +111,13 @@ void Display::key_callback(GLFWwindow* window, int key, int scancode, int action
 			// Close the window. This causes the program to also terminate.
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
+		// Turn on idle rotation
 		else if (key == GLFW_KEY_R) {
 			doRotate = !doRotate;
+		}
+		// Choose rotate direction
+		else if (key == GLFW_KEY_L) {
+			doRotateLeft = !doRotateLeft;
 		}
 	}
 }

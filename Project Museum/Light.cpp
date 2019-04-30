@@ -19,7 +19,7 @@ void Light::sendLightInfo(Shader &shader) {
 		shader.setVec4("light.direction", direction);
 		shader.setVec3("light.attenuation", attenuation);
 		shader.setVec4("light.color", color);
-		shader.setFloat("light.phi", glm::radians(phi));
+		shader.setFloat("light.phi", glm::cos(phi));
 	}
 }
 
