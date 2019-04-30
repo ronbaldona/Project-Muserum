@@ -12,9 +12,11 @@ class Light {
 	lightType type;
 	vec4 color, position, direction;
 	vec3 attenuation;
+	float phi;
+	float innerCutoff;
+	float outerCutoff;
 
 public:
-	float phi;
 	// Directional
 	Light(lightType lt, vec4 dir, vec4 col) {
 		type = lt;
@@ -35,7 +37,17 @@ public:
 		direction = -dir;
 		attenuation = atten;
 		color = col;
-		phi = glm::radians(angle);
+		phi = glm::cos(glm::radians(angle));
+	}
+	// Spotlight
+	Light(lightType lt, vec4 pos, vec4 dir, vec3 atten, vec4 col, float outerAngle, float innerAngle) {
+		type = lt;
+		position = pos;
+		direction = -dir;
+		attenuation = atten;
+		color = col;
+		outerCutoff = glm::cos(glm::radians(outerAngle));
+		innerCutoff = glm::cos(glm::radians(innerAngle));
 	}
 
 	void sendLightInfo(Shader &shader);

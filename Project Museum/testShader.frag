@@ -10,7 +10,7 @@ struct Light {
 	vec4 position;
 	vec4 direction;
 	vec3 attenuation;
-	float phi;
+	float phi, outerCutoff, innerCutoff;
 };
 uniform Light light;
 const int DIRECTIONAL = 0;
@@ -76,9 +76,19 @@ void main (void)
 		// Spotlight lighting
 		if (light.type == SPOTLIGHT) {
 			vec3 spotDir = normalize(vec3(view * light.direction));
-			if (light.phi < dot(vecToLight, spotDir)) {
+			float theta = dot(vecToLight, spotDir);
+			/*
+			if (light.phi < theta) {
 				finalColor = attenuationConst * computeLight(eyePos, vertPos, vecToLight, normal);
 			}
+			*/
+			// Light lies within the spotlight's lighting
+			if (light.outerCutoff < theta) {
+				float spotIntensity = (theta - light.outerCutoff) / (light.innerCutoff - light.outerCutoff);
+				spotIntensity = clamp(spotIntensity, 0.0f, 1.0f);
+				finalColor = spotIntensity * attenuationConst * computeLight(eyePos, vertPos, vecToLight, normal);
+			}
+
 		}
 		// Point light based lighting
 		else 

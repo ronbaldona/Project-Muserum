@@ -38,12 +38,22 @@ void Display::init_objects() {
 						 vec4(-0.1f, 0.7f, 1.0f, 1.0f), 
 						 vec3(1.0f, 0.5f, 0.1f), 
 						 vec4(0.1f, 0.2f, 0.8f, 1.0f));
+	/*
 	spotlight = new Light(SPOTLIGHT, 
 						 vec4(-1.0f, 1.0f, 1.0f, 1.0f), 
 						 glm::normalize(vec4(1.0f, -1.0f, -1.0f, 0)),
 						 vec3(1.0f, 0.5f, 0.1f),
 						 vec4(1.0f, 1.0f, 1.0f, 1.0f),
 						 15.0f);
+	*/
+	spotlight = new Light(SPOTLIGHT,
+		vec4(-1.0f, 1.0f, 1.0f, 1.0f),
+		glm::normalize(vec4(1.0f, -1.0f, -1.0f, 0)),
+		vec3(1.0f, 0.5f, 0.1f), 
+		vec4(1.0f, 1.0f, 1.0f, 1.0f), 
+		20.0f, 15.0f);
+
+
 
 	// Init shader
 	testShader = new Shader("./testShader.vert", "./testShader.frag");
