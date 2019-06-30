@@ -61,10 +61,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="testShader.frag">
+    <None Include="phongShader.frag">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="testShader.vert">
+    <None Include="phongShader.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="lightShader.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="lightShader.frag">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>

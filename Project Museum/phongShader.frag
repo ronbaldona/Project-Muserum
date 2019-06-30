@@ -1,5 +1,5 @@
 # version 330 core
-
+// INPUTS FROM VERTEX SHADER
 in vec3 myNormal;
 in vec4 myVertex;
 
@@ -27,7 +27,7 @@ struct Material {
 };
 uniform Material material;
 
-// Use this to transform light to object space (direction too?)
+// Use this to transform light to object space
 uniform mat4 modelview;
 uniform mat4 view;
 
@@ -37,6 +37,7 @@ const float PI = 3.14159265359f;
 // This first defined output of type vec4 will be the fragment color
 out vec4 fragColor;
 
+// Calculates Blinn-Phong lighting vals
 vec4 computeLight(vec3 eyePos, vec3 vertPos, vec3 lightDir, vec3 normal) {
 	// Diffuse
 	float nDotL = dot(normal, lightDir);
@@ -53,7 +54,7 @@ vec4 computeLight(vec3 eyePos, vec3 vertPos, vec3 lightDir, vec3 normal) {
 
 void main (void) 
 {
-	// Note that the calculations are done in dehomogenized view space
+	// Note that the calculations are done in view space
 	vec3 vertPos = myVertex.xyz / myVertex.w;
 	vec3 eyePos = vec3(0, 0, 0);
 	vec3 normal = normalize(myNormal);
@@ -77,23 +78,16 @@ void main (void)
 		if (light.type == SPOTLIGHT) {
 			vec3 spotDir = normalize(vec3(view * light.direction));
 			float theta = dot(vecToLight, spotDir);
-			/*
-			if (light.phi < theta) {
-				finalColor = attenuationConst * computeLight(eyePos, vertPos, vecToLight, normal);
-			}
-			*/
 			// Light lies within the spotlight's lighting
 			if (light.outerCutoff < theta) {
 				float spotIntensity = (theta - light.outerCutoff) / (light.innerCutoff - light.outerCutoff);
 				spotIntensity = clamp(spotIntensity, 0.0f, 1.0f);
 				finalColor = spotIntensity * attenuationConst * computeLight(eyePos, vertPos, vecToLight, normal);
 			}
-
 		}
 		// Point light based lighting
 		else 
 			finalColor = attenuationConst * computeLight(eyePos, vertPos, vecToLight, normal);
 	}
 	fragColor = material.ambient + material.emission + finalColor;
-	//fragColor = vec4(myNormal, 1.0f);
 }

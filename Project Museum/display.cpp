@@ -2,8 +2,26 @@
 
 // State variables
 bool doRotate = false;
-bool doRotateLeft = false;
+bool doRotateLeft = true;
 
+// List of 3D objects
+vector<Light*> lightList;
+vector<Model*> objList;
+
+short whichLight = 1;
+
+/**************** MISCELLANEOUS HELPER FUNCTIONS ******************/
+/*
+void renderObjects() {
+
+}
+
+void renderLights() {
+
+}
+*/
+
+/**************** MISCELLANEOUS HELPER FUNCTIONS ******************/
 
 GLFWwindow* Display::createWindow(int x, int y) {
 	GLFWwindow* window = glfwCreateWindow(x, y, "Test Window", NULL, NULL);
@@ -20,6 +38,13 @@ void Display::setupGLFW() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
+void Display::helpMessage() {
+	cout << "Controls\n";
+	cout << "------------------------------\n";
+	cout << "Rotate: r\n";
+	cout << "Help: h\n";
+	cout << "------------------------------\n\n";
+}
 
 void Display::init_objects() {
 	// Init objects + properties
@@ -29,6 +54,8 @@ void Display::init_objects() {
 						 vec4(0.797357f, 0.723991f, 0.208006f, 1.0f),
 						 vec4(0.0f, 0.0f, 0.0f, 0.0f),
 						 83.2f);
+	pntLgtModel = new Model("./Light/sphere.obj");
+	sptLgtModel = new Model("./Light/cone.obj");
 	
 	// Init lights and their properties
 	dirLight = new Light(DIRECTIONAL, 
@@ -37,34 +64,25 @@ void Display::init_objects() {
 	pntLight = new Light(PNT, 
 						 vec4(-0.1f, 0.7f, 1.0f, 1.0f), 
 						 vec3(1.0f, 0.5f, 0.1f), 
-						 vec4(0.1f, 0.2f, 0.8f, 1.0f));
-	/*
-	spotlight = new Light(SPOTLIGHT, 
-						 vec4(-1.0f, 1.0f, 1.0f, 1.0f), 
-						 glm::normalize(vec4(1.0f, -1.0f, -1.0f, 0)),
-						 vec3(1.0f, 0.5f, 0.1f),
-						 vec4(1.0f, 1.0f, 1.0f, 1.0f),
-						 15.0f);
-	*/
+						 vec4(0.1f, 0.2f, 0.8f, 1.0f),
+						 pntLgtModel);
 	spotlight = new Light(SPOTLIGHT,
-		vec4(-1.0f, 1.0f, 1.0f, 1.0f),
-		glm::normalize(vec4(1.0f, -1.0f, -1.0f, 0)),
-		vec3(1.0f, 0.5f, 0.1f), 
-		vec4(1.0f, 1.0f, 1.0f, 1.0f), 
-		20.0f, 15.0f);
+						  vec4(-1.0f, 1.0f, 1.0f, 1.0f),
+						  glm::normalize(vec4(1.0f, -1.0f, -1.0f, 0)),
+						  vec3(1.0f, 0.5f, 0.1f), 
+						  vec4(1.0f, 1.0f, 1.0f, 1.0f), 
+						  20.0f, 15.0f,
+						  sptLgtModel);
 
-
-
-	// Init shader
-	testShader = new Shader("./testShader.vert", "./testShader.frag");
+	// Init shaders
+	phongShader = new Shader("./phongShader.vert", "./phongShader.frag");
+	lightShader = new Shader("./lightShader.vert", "./lightShader.frag");
 }
 
 void Display::cleanUp() {
-	delete testShader;
-	delete teapot;
-
+	delete phongShader, lightShader;
+	delete teapot, pntLgtModel, sptLgtModel;
 	delete dirLight, pntLight, spotlight;
-
 	glfwTerminate();
 }
 
@@ -85,27 +103,54 @@ void Display::idle_callback() {
 		// Rotate up
 		else
 			teapot->rotate(1.0f, vec3(1.0f, 0, 0));
-
 	}
 }
 
 void Display::display_callback(GLFWwindow* window) {
-	testShader->use();
-	teapot->sendMaterialInfo(*testShader);
-	//dirLight->sendLightInfo(*testShader);
-	//pntLight->sendLightInfo(*testShader);
-	spotlight->sendLightInfo(*testShader);
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		Display::idle_callback();
-		testShader->setMat4("modelview", viewMat * teapot->model);
-		testShader->setMat4("view", viewMat);
-		testShader->setMat4("projection", projMat);
-		//testShader->setMat4("model", teapot->model);
-		testShader->setVec3("eyeloc", camPos);
-		teapot->Draw(*testShader);
-		//cout << spotlight->phi << endl;
 
+		// Draw the lights
+		//lightShader->use();
+		glUseProgram(lightShader->ID);
+		/*
+		switch (whichLight) {
+		case DIRECTIONAL:
+			dirLight->draw(*lightShader, viewMat, projMat);
+			break;
+		case PNT:
+			pntLight->draw(*lightShader, viewMat, projMat);
+			break;
+		case SPOTLIGHT:
+			spotlight->draw(*lightShader, viewMat, projMat);
+			break;
+		}
+		*/
+		spotlight->draw(*lightShader, viewMat, projMat);
+
+		// Send the right lighting info, and then draw the rest of the scene
+		
+		//phongShader->use();
+		glUseProgram(phongShader->ID);
+		teapot->Draw(*phongShader, viewMat, projMat);
+		
+		/*
+		switch (whichLight) {
+		case DIRECTIONAL:
+			dirLight->sendLightInfo(*phongShader);
+			break;
+		case PNT:
+			pntLight->sendLightInfo(*phongShader);
+			break;
+		case SPOTLIGHT:
+			spotlight->sendLightInfo(*phongShader);
+			break;
+		}
+		teapot->rotate(-30.0f, vec3(0, 1.0f, 0));
+		//teapot->Draw(*phongShader, viewMat, projMat);
+		teapot->rotate(30.0f, vec3(0, 1.0f, 0));
+		*/
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -129,6 +174,22 @@ void Display::key_callback(GLFWwindow* window, int key, int scancode, int action
 		else if (key == GLFW_KEY_L) {
 			doRotateLeft = !doRotateLeft;
 		}
+		else if (key == GLFW_KEY_1) {
+			cout << "Switched to directional light\n";
+			whichLight = DIRECTIONAL;
+		}
+		else if (key == GLFW_KEY_2) {
+			cout << "Switched to point light\n";
+			whichLight = PNT;
+		}
+		else if (key == GLFW_KEY_3) {
+			cout << "Switched to spotlight\n";
+			whichLight = SPOTLIGHT;
+		}
+		else if (key == GLFW_KEY_H) {
+			helpMessage();
+		}
+	
 	}
 }
 

@@ -70,6 +70,13 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	vector<unsigned int> indices;
 	vector<Texture> textures;
 
+	float xMax = FLT_MIN;
+	float xMin = FLT_MAX;
+	float yMax = FLT_MIN;
+	float yMin = FLT_MAX;
+	float zMax = FLT_MIN;
+	float zMin = FLT_MAX;
+
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
@@ -79,6 +86,20 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 		vector.y = mesh->mVertices[i].y;
 		vector.z = mesh->mVertices[i].z;
 		vertex.Pos = vector;
+		
+		/**/
+		if (xMax < vector.x)
+			xMax = vector.x;
+		else if (xMin > vector.x)
+			xMin = vector.x;
+		if (yMax < vector.y)
+			yMax = vector.y;
+		else if (yMin > vector.y)
+			yMin = vector.y;
+		if (zMax < vector.z)
+			zMax = vector.z;
+		else if (zMin > vector.z)
+			zMin = vector.z;
 
 		vector.x = mesh->mNormals[i].x;
 		vector.y = mesh->mNormals[i].y;
@@ -97,6 +118,13 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 
 		vertices.push_back(vertex);
 	}
+
+	vec3 cent = vec3((xMin + xMax) / 2.0f, (yMin + yMax) / 2.0f, (zMin + zMin) / 2.0f);
+
+	for (auto vert : vertices) {
+		vert.Pos = vert.Pos - cent;
+	}
+
 	// process indices
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
@@ -170,7 +198,7 @@ void Model::translate(const float &tx, const float &ty, const float &tz) {
 			  		     0, 1, 0, 0,
 						 0, 0, 1, 0,
 						 tx, ty, tz, 1);
-	model = model * transMat;
+	this->transMat = this->transMat * transMat;
 
 }
 void Model::translate(const vec3 &tvec) {
@@ -178,7 +206,7 @@ void Model::translate(const vec3 &tvec) {
 						 0, 1, 0, 0,
 						 0, 0, 1, 0,
 						 tvec.x, tvec.y, tvec.z, 1);
-	model = model * transMat;
+	this->transMat = this->transMat * transMat;
 
 }
 void Model::scale(const float &sx, const float &sy, const float &sz) {
@@ -186,15 +214,14 @@ void Model::scale(const float &sx, const float &sy, const float &sz) {
 						 0, sy, 0, 0,
 						 0, 0, sz, 0,
 						 0, 0, 0, 1);
-	model = scaleMat * model;
-
+	this->scaleMat = this->scaleMat * scaleMat;
 }
 void Model::scale(const vec3 &svec) {
 	mat4 scaleMat = mat4(svec.x, 0, 0, 0,
 						 0, svec.y, 0, 0,
 						 0, 0, svec.z, 0,
 						 0, 0, 0, 1);
-	model = scaleMat * model;
+	this->scaleMat = this->scaleMat * scaleMat;
 }
 void Model::rotate(const float degrees, const float ax, const float ay, const float az) {
 	float rad = glm::radians(degrees);
@@ -210,7 +237,7 @@ void Model::rotate(const float degrees, const float ax, const float ay, const fl
 					   tempRot[1][0], tempRot[1][1], tempRot[1][2], 0,
 					   tempRot[2][0], tempRot[2][1], tempRot[2][2], 0,
 					   0, 0, 0, 1);
-	model = model * rotMat;
+	this->rotMat = this->rotMat * rotMat;
 
 }
 void Model::rotate(const float degrees, const vec3 & axis) {
@@ -228,11 +255,23 @@ void Model::rotate(const float degrees, const vec3 & axis) {
 					   tempRot[1][0], tempRot[1][1], tempRot[1][2], 0,
 					   tempRot[2][0], tempRot[2][1], tempRot[2][2], 0,
 					   0, 0, 0, 1);
-	model = model * rotMat;
+	this->rotMat = this->rotMat * rotMat;
 }
 
 
 void Model::Draw(Shader shader) {
+	for (unsigned int i = 0; i < meshes.size(); i++)
+		meshes[i].Draw(shader);
+}
+
+void Model::Draw(Shader shader, const mat4& view, const mat4& projection) {
+	mat4 model = transMat * rotMat * scaleMat;
+
+	// Send the material info over to the shader
+	sendMaterialInfo(shader);
+	shader.setMat4("view", view);
+	shader.setMat4("modelview", view * model);
+	shader.setMat4("projection", projection);
 	for (unsigned int i = 0; i < meshes.size(); i++)
 		meshes[i].Draw(shader);
 }

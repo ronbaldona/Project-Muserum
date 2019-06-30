@@ -29,36 +29,19 @@ void setUpCallBacks() {
 	glfwSetFramebufferSizeCallback(window, Display::resize_callback);
 }
 
-/*
-// Replace with window rendering
-void render() {
-	teapot = new Model("teapot.obj");
-	dirLight = new Light(DIRECTIONAL, glm::normalize(-vec3(0.5f, 0.5f, 0.5f)), vec3(1.0f, 1.0f, 1.0f));
-	testShader->use();
-	teapot->setMaterials(vec4(0.24725f, 0.2245f, 0.0645f, 1.0f),
-						 vec4(0.34615f, 0.3143f, 0.0903f, 1.0f),
-						 vec4(0.797357f, 0.723991f, 0.208006f, 1.0f),
-						 vec4(0.0f, 0.0f, 0.0f, 0.0f),
-						 83.2f, *testShader);
-	dirLight->sendLightInfo(*testShader);
-	testShader->setVec3("eyeloc", camPos);
-	while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		Display::idle_callback();
-		testShader->setMat4("modelview", viewMat * teapot->model);
-		testShader->setMat4("projection", projMat);
-		testShader->setMat4("model", teapot->model);
-		teapot->Draw(*testShader);
+void print_info() {
+	printf("Renderer used: %s\n", glGetString(GL_RENDERER));
+	printf("OpenGL version supported %s\n", glGetString(GL_VERSION));
 
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
+	//If the shading language symbol is defined
+#ifdef GL_SHADING_LANGUAGE_VERSION
+	std::printf("Supported GLSL version is %s.\n", (char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+#endif
+	printf("--------------------------------------------------\n\n");
 }
-*/
 
 int main(int argc, char * argv[]) {
 	// Create a window
-	// Initialize window settings
 	Display::setupGLFW();
 	window = Display::createWindow(width, height);
 	if (!window) {
@@ -71,8 +54,11 @@ int main(int argc, char * argv[]) {
 		std::cerr << "Failed to initialize GLAD\n";
 		return -1;
 	}
+	// Print OpenGL info/rendering info
+	print_info();
 	Display::resize_callback(window, width, height);
 	Display::init_objects();
+	Display::helpMessage();
 	// Main window rendering loop
 	Display::display_callback(window);
 	Display::cleanUp();

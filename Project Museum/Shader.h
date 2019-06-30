@@ -14,7 +14,7 @@ class Shader {
 public:
 	unsigned int ID;
 
-	Shader() {}
+	Shader() = default;
 	~Shader();
 	Shader(const GLchar* vertPath, const GLchar* fragPath);
 

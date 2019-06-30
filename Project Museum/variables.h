@@ -20,14 +20,17 @@ typedef glm::vec4 vec4;
 #define EXTERN extern 
 #endif
 
-EXTERN Shader* testShader;
 // Camera setttings
 EXTERN mat4 projMat;
 EXTERN mat4 viewMat;
 
 #ifdef MAINPROGRAM
 GLFWwindow* window = nullptr;
+Shader* phongShader = nullptr;
+Shader* lightShader = nullptr;
 Model* teapot = nullptr;
+Model* pntLgtModel = nullptr;
+Model* sptLgtModel = nullptr;
 Light* dirLight = nullptr;
 Light* pntLight = nullptr;
 Light* spotlight = nullptr;
@@ -39,7 +42,11 @@ vec3 camLookAt(0.0f, 0.0f, 0.0f);
 vec3 camUp(0.0f, 1.0f, 0.0f);
 #else
 EXTERN GLFWwindow* window;
+EXTERN Shader* phongShader;
+EXTERN Shader* lightShader;
 EXTERN Model* teapot;
+EXTERN Model* pntLgtModel;
+EXTERN Model* sptLgtModel;
 EXTERN Light* dirLight;
 EXTERN Light* pntLight;
 EXTERN Light* spotlight;

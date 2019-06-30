@@ -26,13 +26,16 @@ class Model
 	Mesh processMesh(aiMesh *mesh, const aiScene *scene);
 	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
 public:
-	mat4 model;	// Transformation mat
+	//mat4 model;	// Transformation mat
+	mat4 rotMat, scaleMat, transMat;
 
 	Model();
 	~Model();
 
 	Model(const char* path) { 
-		model = mat4(1.0f);
+		rotMat = mat4(1.0f);
+		scaleMat = mat4(1.0f);
+		transMat = mat4(1.0f);
 		loadModel(path);
 	}
 	void setMaterials(vec4 ambient, vec4 diffuse, vec4 specular, vec4 emission, float shininess);
@@ -44,5 +47,7 @@ public:
 	void rotate(const float degrees, const float ax, const float ay, const float az);
 	void rotate(const float degrees, const vec3 & axis);
 	void Draw(Shader shader);
+	void Draw(Shader shader, const mat4 &view, const mat4 &projection);
+
 };
 

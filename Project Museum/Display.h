@@ -7,6 +7,7 @@
 class Display {
 public:
 	static GLFWwindow* createWindow(int x, int y);
+	static void helpMessage();
 	static void setupGLFW();
 	static void init_objects();
 	static void cleanUp();
