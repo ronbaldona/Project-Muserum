@@ -10,6 +10,8 @@
 
 #include "Mesh.h"
 
+const float PI = 3.14159265359f;
+
 struct Materials {
 	vec4 ambient;
 	vec4 diffuse;
@@ -25,6 +27,8 @@ private:
 	vector<Texture> textures_loaded;
 	string directory;
 	Materials material;
+	float xMin, yMin, zMin;
+	float xMax, yMax, zMax;
 
 	// Loading the model
 	void processNode(aiNode *node, const aiScene *scene);
@@ -54,6 +58,8 @@ public:
 	void scale(const vec3 &svec);
 	void rotate(const float degrees, const float ax, const float ay, const float az);
 	void rotate(const float degrees, const vec3 & axis);
+
+	static void getAxisAngle(float& angle, vec3& axis, vec3 v1, vec3 v2);
 
 	// Render the object
 	virtual void setMaterialVal(const vec4 ambient, const vec4 diffuse, const vec4 specular, const vec4 emission, 

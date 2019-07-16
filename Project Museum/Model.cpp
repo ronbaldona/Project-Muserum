@@ -7,13 +7,13 @@ Model::Model()
 }
 
 Model::Model(const char* path) {
-	initTransformMat();
 	loadModel(path);
 }
 
 Model::~Model()
 {
 }
+
 
 GLint TextureFromFile(const char* path, string directory)
 {
@@ -40,6 +40,7 @@ GLint TextureFromFile(const char* path, string directory)
 }
 
 void Model::loadModel(string path) {
+	initTransformMat();
 	Assimp::Importer import;
 	const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
@@ -50,7 +51,30 @@ void Model::loadModel(string path) {
 	}
 	directory = path.substr(0, path.find_last_of('/'));
 
+	// Initialize values for search
+	xMax = FLT_MIN;
+	xMin = FLT_MAX;
+	yMax = FLT_MIN;
+	yMin = FLT_MAX;
+	zMax = FLT_MIN;
+	zMin = FLT_MAX;
+
 	processNode(scene->mRootNode, scene);
+
+	// Resize
+	float majorAxis;
+	if (xMax - xMin > yMax - yMin && xMax - xMin > zMax - zMin)
+		majorAxis = xMax - xMin;
+	else if (yMax - yMin > zMax - zMin)
+		majorAxis = yMax - yMin;
+	else
+		majorAxis = zMax - zMin;
+	majorAxis = 1.0f / majorAxis;
+	vec3 scaleVal = vec3(majorAxis, majorAxis, majorAxis);
+	scale(scaleVal);
+	// Move to center
+	vec3 center = vec3(majorAxis * (xMin + xMax) / 2.0f, majorAxis * (yMin + yMax) / 2.0f, majorAxis * (zMin + zMin) / 2.0f);
+	translate(-center);
 }
 
 void Model::processNode(aiNode *node, const aiScene *scene)
@@ -74,15 +98,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	vector<unsigned int> indices;
 	vector<Texture> textures;
 
-	/*
-	float xMax = FLT_MIN;
-	float xMin = FLT_MAX;
-	float yMax = FLT_MIN;
-	float yMin = FLT_MAX;
-	float zMax = FLT_MIN;
-	float zMin = FLT_MAX;
-	*/
-
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
@@ -93,7 +108,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 		vector.z = mesh->mVertices[i].z;
 		vertex.Pos = vector;
 		
-		/*
 		if (xMax < vector.x)
 			xMax = vector.x;
 		else if (xMin > vector.x)
@@ -106,7 +120,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 			zMax = vector.z;
 		else if (zMin > vector.z)
 			zMin = vector.z;
-		*/
 
 		vector.x = mesh->mNormals[i].x;
 		vector.y = mesh->mNormals[i].y;
@@ -125,14 +138,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 
 		vertices.push_back(vertex);
 	}
-
-	/*
-	vec3 cent = vec3((xMin + xMax) / 2.0f, (yMin + yMax) / 2.0f, (zMin + zMin) / 2.0f);
-
-	for (auto vert : vertices) {
-		vert.Pos = vert.Pos - cent;
-	}
-	*/
 
 	// process indices
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
@@ -268,6 +273,13 @@ void Model::rotate(const float degrees, const vec3 & axis) {
 					   tempRot[2][0], tempRot[2][1], tempRot[2][2], 0,
 					   0, 0, 0, 1);
 	this->rotMat = this->rotMat * rotMat;
+}
+
+void Model::getAxisAngle(float& angle, vec3& axis, vec3 v1, vec3 v2) {
+	v1 = glm::normalize(v1);
+	v2 = glm::normalize(v2);
+	axis = glm::cross(v1, v2);
+	angle = acos(glm::dot(v1, v2)) * (180.0f / PI);
 }
 
 void Model::Draw(Shader shader, const mat4& view, const mat4& projection) {

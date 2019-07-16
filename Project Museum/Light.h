@@ -48,7 +48,6 @@ public:
 		outerCutoff = 0;
 		loadModel(modelPath);
 
-		initTransformMat();
 	}
 	// Spotlight
 	Light(lightType lt, vec4 pos, vec4 dir, vec3 atten, vec4 col, float outerAngle, float innerAngle, string modelPath) {
@@ -57,15 +56,18 @@ public:
 		position = pos;
 		direction = -dir;
 		attenuation = atten;
-		// WHAT DOES PHI DO?
 		phi = 0;
 		outerCutoff = glm::cos(glm::radians(outerAngle));
 		innerCutoff = glm::cos(glm::radians(innerAngle));
 		loadModel(modelPath);
 
-		initTransformMat();
 	}
 	~Light() {}
+
+	vec3 getDirection() {
+		return direction;
+	}
+
 	
 	void sendLightInfo(Shader& shader);
 	

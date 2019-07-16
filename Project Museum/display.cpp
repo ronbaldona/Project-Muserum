@@ -65,8 +65,13 @@ void Display::init_objects() {
 						  20.0f,										// Outer Angle
 						  15.0f,										// Inner Angle
 						  "./Light/cone.obj");							// Path to model
-	//pntLight->translate(-0.1f, 0.7f, 1.0f);
+	pntLight->translate(-0.1f, 0.7f, 1.0f);
+
+	float angle;
+	vec3 axis;
 	spotlight->translate(-1.0f, 1.0f, 1.0f);
+	Model::getAxisAngle(angle, axis, vec3(0, 1.0f, 0), spotlight->getDirection());
+	spotlight->rotate(angle, axis);
 
 	// Init shaders
 	phongShader = new Shader("./phongShader.vert", "./phongShader.frag");
