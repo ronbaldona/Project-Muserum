@@ -1,3 +1,7 @@
+/* Special Thanks to learnopengl.com for the assimp code!
+ * Base class for rendering 3D objects
+ * Default lighting model is based on Phong shading
+ */
 #pragma once
 
 #include <assimp/Importer.hpp>
@@ -16,38 +20,44 @@ struct Materials {
 
 class Model
 {
+private:
 	vector<Mesh> meshes;
 	vector<Texture> textures_loaded;
 	string directory;
 	Materials material;
 
-	void loadModel(string path);
+	// Loading the model
 	void processNode(aiNode *node, const aiScene *scene);
 	Mesh processMesh(aiMesh *mesh, const aiScene *scene);
 	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
-public:
-	//mat4 model;	// Transformation mat
+
+protected:
 	mat4 rotMat, scaleMat, transMat;
-
-	Model();
-	~Model();
-
-	Model(const char* path) { 
+	void loadModel(string path);
+	inline void initTransformMat() {
 		rotMat = mat4(1.0f);
 		scaleMat = mat4(1.0f);
 		transMat = mat4(1.0f);
-		loadModel(path);
 	}
-	void setMaterials(vec4 ambient, vec4 diffuse, vec4 specular, vec4 emission, float shininess);
-	void sendMaterialInfo(Shader shader) const;
+	virtual void setUniformMaterial(Shader shader) const;
+
+public:
+	Model();
+	~Model();
+
+	Model(const char* path);
+
+	// Transformation methods
 	void translate(const float &tx, const float &ty, const float &tz);
 	void translate(const vec3 &tvec);
 	void scale(const float &sx, const float &sy, const float &sz);
 	void scale(const vec3 &svec);
 	void rotate(const float degrees, const float ax, const float ay, const float az);
 	void rotate(const float degrees, const vec3 & axis);
-	void Draw(Shader shader);
-	void Draw(Shader shader, const mat4 &view, const mat4 &projection);
 
+	// Render the object
+	virtual void setMaterialVal(const vec4 ambient, const vec4 diffuse, const vec4 specular, const vec4 emission, 
+								const float shininess);
+	void Draw(Shader shader, const mat4& view, const mat4& projection);
 };
 

@@ -16,6 +16,9 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{39e5b43d-0de8-4a53-a32c-ee1d92ba188a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Drawables">
+      <UniqueIdentifier>{9de49bdf-eeb8-45fc-bbbd-ffd7682035d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -39,6 +42,9 @@
     <ClCompile Include="Light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Skybox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="variables.h">
@@ -47,17 +53,20 @@
     <ClInclude Include="Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Display.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Light.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Drawables</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files\Drawables</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Header Files\Drawables</Filter>
+    </ClInclude>
+    <ClInclude Include="Skybox.h">
+      <Filter>Header Files\Drawables</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

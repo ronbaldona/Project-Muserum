@@ -18,7 +18,7 @@ inline bool initializeGLSettings() {
 	// Set polygon drawing mode to fill front and back of 3d object
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	// Turn off backface culling for now
-	glDisable(GL_CULL_FACE);
+	//glDisable(GL_CULL_FACE);
 	glClearColor(0, 0, 1.0f, 0);
 	return true;
 }
@@ -56,7 +56,10 @@ int main(int argc, char * argv[]) {
 	}
 	// Print OpenGL info/rendering info
 	print_info();
+	
+	// Remove this line below? Might be pointless
 	Display::resize_callback(window, width, height);
+
 	Display::init_objects();
 	Display::helpMessage();
 	// Main window rendering loop

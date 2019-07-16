@@ -32,6 +32,7 @@ uniform mat4 modelview;
 uniform mat4 view;
 
 // Other constants
+uniform bool isLight;
 const float PI = 3.14159265359f;
 
 // This first defined output of type vec4 will be the fragment color
@@ -54,6 +55,10 @@ vec4 computeLight(vec3 eyePos, vec3 vertPos, vec3 lightDir, vec3 normal) {
 
 void main (void) 
 {
+	if (isLight) {
+		fragColor = vec4(normalize(myNormal), 1.0f);
+		return;
+	}
 	// Note that the calculations are done in view space
 	vec3 vertPos = myVertex.xyz / myVertex.w;
 	vec3 eyePos = vec3(0, 0, 0);

@@ -6,6 +6,10 @@ Model::Model()
 {
 }
 
+Model::Model(const char* path) {
+	initTransformMat();
+	loadModel(path);
+}
 
 Model::~Model()
 {
@@ -70,12 +74,14 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	vector<unsigned int> indices;
 	vector<Texture> textures;
 
+	/*
 	float xMax = FLT_MIN;
 	float xMin = FLT_MAX;
 	float yMax = FLT_MIN;
 	float yMin = FLT_MAX;
 	float zMax = FLT_MIN;
 	float zMin = FLT_MAX;
+	*/
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -87,7 +93,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 		vector.z = mesh->mVertices[i].z;
 		vertex.Pos = vector;
 		
-		/**/
+		/*
 		if (xMax < vector.x)
 			xMax = vector.x;
 		else if (xMin > vector.x)
@@ -100,6 +106,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 			zMax = vector.z;
 		else if (zMin > vector.z)
 			zMin = vector.z;
+		*/
 
 		vector.x = mesh->mNormals[i].x;
 		vector.y = mesh->mNormals[i].y;
@@ -119,11 +126,13 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 		vertices.push_back(vertex);
 	}
 
+	/*
 	vec3 cent = vec3((xMin + xMax) / 2.0f, (yMin + yMax) / 2.0f, (zMin + zMin) / 2.0f);
 
 	for (auto vert : vertices) {
 		vert.Pos = vert.Pos - cent;
 	}
+	*/
 
 	// process indices
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
@@ -177,7 +186,10 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 	return textures;
 }
 
-void Model::setMaterials(vec4 ambient, vec4 diffuse, vec4 specular, vec4 emission, float shininess) {
+
+
+void Model::setMaterialVal(const vec4 ambient, const vec4 diffuse, const vec4 specular, const vec4 emission,
+						   const float shininess) {
 	material.ambient = ambient;
 	material.diffuse = diffuse;
 	material.specular = specular;
@@ -185,7 +197,7 @@ void Model::setMaterials(vec4 ambient, vec4 diffuse, vec4 specular, vec4 emissio
 	material.shininess = shininess;
 }
 
-void Model::sendMaterialInfo(Shader shader) const {
+void Model::setUniformMaterial(Shader shader) const {
 	shader.setVec4("material.ambient", material.ambient);
 	shader.setVec4("material.diffuse", material.diffuse);
 	shader.setVec4("material.specular", material.specular);
@@ -258,17 +270,11 @@ void Model::rotate(const float degrees, const vec3 & axis) {
 	this->rotMat = this->rotMat * rotMat;
 }
 
-
-void Model::Draw(Shader shader) {
-	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].Draw(shader);
-}
-
 void Model::Draw(Shader shader, const mat4& view, const mat4& projection) {
 	mat4 model = transMat * rotMat * scaleMat;
 
 	// Send the material info over to the shader
-	sendMaterialInfo(shader);
+	setUniformMaterial(shader);
 	shader.setMat4("view", view);
 	shader.setMat4("modelview", view * model);
 	shader.setMat4("projection", projection);
