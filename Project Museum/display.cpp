@@ -1,15 +1,44 @@
 #include "Display.h"
+#include "GLDebugHelp.h"
+
+// State definitions
+const bool ROTATE_MODE_TRACKBALL = true;
+const bool ROTATE_MODE_LOOKAROUND = false;
 
 // State variables
 bool doRotate = false;
 bool doRotateLeft = true;
+bool rotateMode = ROTATE_MODE_TRACKBALL;
+bool lmbPressed = false;
+
+// Variables for trackball rotation
+vec3 oldCursorPosProjected;
 
 // List of 3D objects
 vector<Light*> lightList;
 vector<Model*> objList;
 
-short whichLight = 1;
+short whichLight = PNT;
 
+/*---------- HELPER FUNCTIONS ----------*/
+inline vec3 projectToViewportHemisphere(double xPos, double yPos) {
+	vec3 toRet;
+	toRet.x = (float)(2 * xPos - width) / width;
+	toRet.y = (float)(height - 2 * yPos) / height;
+	
+	// Point lies outside unit circle. Project it to the nearest point on the circle
+	float d = (toRet.x * toRet.x) + (toRet.y * toRet.y);
+	if (d > 1.0f) {
+		toRet.z = 0;
+		return normalize(toRet);
+	}
+
+	toRet.z = sqrt(1.0f - d);
+
+	return toRet;
+}
+
+inline double getMagnitude(vec3 v) { return sqrt(v.x * v.x + v.y * v.y + v.z * v.z); }
 
 GLFWwindow* Display::createWindow(int x, int y) {
 	GLFWwindow* window = glfwCreateWindow(x, y, "Test Window", NULL, NULL);
@@ -32,6 +61,7 @@ void Display::helpMessage() {
 	cout << "Controls\n";
 	cout << "------------------------------\n";
 	cout << "Rotate: r\n";
+	cout << "Rotate Mode Change: m\n";
 	cout << "Directional Light: 1\n";
 	cout << "Point Light: 2\n";
 	cout << "Spotlight: 3\n";
@@ -75,11 +105,10 @@ void Display::init_objects() {
 
 	// Init shaders
 	phongShader = new Shader("./phongShader.vert", "./phongShader.frag");
-	lightShader = new Shader("./lightShader.vert", "./lightShader.frag");
 }
 
 void Display::cleanUp() {
-	delete phongShader, lightShader;
+	delete phongShader;
 	delete teapot;
 	delete dirLight, pntLight, spotlight;
 	glfwTerminate();
@@ -147,6 +176,7 @@ void Display::key_callback(GLFWwindow* window, int key, int scancode, int action
 	// Check for a key press
 	if (action == GLFW_PRESS || action == GLFW_REPEAT)
 	{
+		// REWRITE TO SWITCH STATEMENT LATER
 		// Check if escape was pressed
 		if (key == GLFW_KEY_ESCAPE)
 		{
@@ -161,6 +191,19 @@ void Display::key_callback(GLFWwindow* window, int key, int scancode, int action
 		else if (key == GLFW_KEY_L) {
 			doRotateLeft = !doRotateLeft;
 		}
+		else if (key == GLFW_KEY_M) {
+			rotateMode = !rotateMode;
+			if (rotateMode == ROTATE_MODE_LOOKAROUND) {
+				cout << "Mouse control of camera ON. Trackball control OFF\n";
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			}
+			else {
+				cout << "Mouse control of camera OFF. Trackball control ON\n";
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			}
+
+		}
+		// Light settings
 		else if (key == GLFW_KEY_1) {
 			cout << "Switched to directional light\n";
 			whichLight = DIRECTIONAL;
@@ -181,11 +224,44 @@ void Display::key_callback(GLFWwindow* window, int key, int scancode, int action
 }
 
 void Display::mouse_callback(GLFWwindow* window, int button, int action, int mods) {
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+		// Set button pressed down state to true
+		// Get cursor position of press and set it to oldpos
+		// Project it to hemisphere
+		double cursorXPos, cursorYPos;
+		glfwGetCursorPos(window, &cursorXPos, &cursorYPos);
+		oldCursorPosProjected = projectToViewportHemisphere(cursorXPos, cursorYPos);
+		lmbPressed = true;
+		cout << "LMB pressed\n";
+	}
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+		cout << "LMB released\n";
+		lmbPressed = false;
+	}
 
 }
 
 void Display::cursor_callback(GLFWwindow* window, double xpos, double ypos) {
+	// Get current position of the cursor
+	// Project it to hemisphere
+	// Get angle and axis of rotation
+	// Rotate the object
+	if (lmbPressed) {
+		vec3 currentPosProjected = projectToViewportHemisphere(xpos, ypos);
+		vec3 axisOfRotation = glm::cross(oldCursorPosProjected, currentPosProjected);
+		double angleOfRotation = asin(getMagnitude(axisOfRotation)) * (180.0f / PI);
 
+		if (glm::length(axisOfRotation) > 0.0000001f)
+			axisOfRotation = glm::normalize(axisOfRotation);
+		teapot->rotate(angleOfRotation, axisOfRotation);
+
+		/*
+		GLDebugHelp::printVec3("Old Cursor Position", oldCursorPosProjected);
+		GLDebugHelp::printVec3("Current Cursor Position", currentPosProjected);
+		GLDebugHelp::printVec3("Axis of Rotation", axisOfRotation);
+		cout << endl;
+		*/
+	}
 }
 
 void Display::scroll_callback(GLFWwindow* window, double xoffeset, double yoffset) {

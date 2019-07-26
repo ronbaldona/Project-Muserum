@@ -26,7 +26,9 @@ inline bool initializeGLSettings() {
 void setUpCallBacks() {
 	// Set up callbacks
 	glfwSetKeyCallback(window, Display::key_callback);
+	glfwSetCursorPosCallback(window, Display::cursor_callback);
 	glfwSetFramebufferSizeCallback(window, Display::resize_callback);
+	glfwSetMouseButtonCallback(window, Display::mouse_callback);
 }
 
 void print_info() {

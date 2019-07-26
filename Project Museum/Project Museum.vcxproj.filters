@@ -45,6 +45,9 @@
     <ClCompile Include="Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PrintGLInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="variables.h">
@@ -68,6 +71,9 @@
     <ClInclude Include="Skybox.h">
       <Filter>Header Files\Drawables</Filter>
     </ClInclude>
+    <ClInclude Include="GLDebugHelp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="phongShader.frag">
@@ -80,6 +86,12 @@
       <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="lightShader.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Skybox.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Skybox.frag">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>

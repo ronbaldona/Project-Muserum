@@ -272,7 +272,7 @@ void Model::rotate(const float degrees, const vec3 & axis) {
 					   tempRot[1][0], tempRot[1][1], tempRot[1][2], 0,
 					   tempRot[2][0], tempRot[2][1], tempRot[2][2], 0,
 					   0, 0, 0, 1);
-	this->rotMat = this->rotMat * rotMat;
+	this->rotMat = rotMat * this->rotMat;
 }
 
 void Model::getAxisAngle(float& angle, vec3& axis, vec3 v1, vec3 v2) {

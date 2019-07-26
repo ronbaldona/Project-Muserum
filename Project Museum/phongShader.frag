@@ -56,7 +56,8 @@ vec4 computeLight(vec3 eyePos, vec3 vertPos, vec3 lightDir, vec3 normal) {
 void main (void) 
 {
 	if (isLight) {
-		fragColor = vec4(normalize(myNormal), 1.0f);
+		//fragColor = vec4(normalize(myNormal), 1.0f);
+		fragColor = light.color;
 		return;
 	}
 	// Note that the calculations are done in view space
