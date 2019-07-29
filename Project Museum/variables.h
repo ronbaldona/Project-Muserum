@@ -24,6 +24,9 @@ typedef glm::mat4 mat4;
 // General state settings
 const bool TRANSPOSE_MAT = true;
 const bool NO_TRANSPOSE_MAT = false;
+const vec3 X_AXIS(1.0f, 0, 0);
+const vec3 Y_AXIS(0, 1.0f, 0);
+const vec3 Z_AXIS(0, 0, 1.0f);
 
 // Camera setttings
 EXTERN mat4 projMat;

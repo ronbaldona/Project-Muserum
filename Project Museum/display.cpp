@@ -3,16 +3,18 @@
 
 // State definitions
 const bool ROTATE_MODE_TRACKBALL = true;
-const bool ROTATE_MODE_LOOKAROUND = false;
+const bool ROTATE_MODE_CAMERA = false;
+const float PITCH_ANGLE_LIMIT = 89.9f;
+const float MOUSE_SENSITIVITY_CAMERA = 0.1f;
+const float CLOSE_TO_ZERO = 0.000001f;
 
 // State variables
-bool doRotate = false;
-bool doRotateLeft = true;
 bool rotateMode = ROTATE_MODE_TRACKBALL;
 bool lmbPressed = false;
 
-// Variables for trackball rotation
-vec3 oldCursorPosProjected;
+// Global variables for rotation functions
+vec2 oldCursorPos;
+float pitch = 0; float yaw = 0;
 
 // List of 3D objects
 vector<Light*> lightList;
@@ -125,13 +127,7 @@ void Display::resize_callback(GLFWwindow* window, int w, int h) {
 }
 
 void Display::idle_callback() {
-	if (doRotate) {
-		if (doRotateLeft)
-			teapot->rotate(1.0f, vec3(0, 1.0f, 0));
-		// Rotate up
-		else
-			teapot->rotate(1.0f, vec3(1.0f, 0, 0));
-	}
+	
 }
 
 void Display::display_callback(GLFWwindow* window) {
@@ -185,21 +181,20 @@ void Display::key_callback(GLFWwindow* window, int key, int scancode, int action
 		}
 		// Turn on idle rotation
 		else if (key == GLFW_KEY_R) {
-			doRotate = !doRotate;
 		}
 		// Choose rotate direction
 		else if (key == GLFW_KEY_L) {
-			doRotateLeft = !doRotateLeft;
 		}
 		else if (key == GLFW_KEY_M) {
 			rotateMode = !rotateMode;
-			if (rotateMode == ROTATE_MODE_LOOKAROUND) {
+			if (rotateMode == ROTATE_MODE_CAMERA) {
 				cout << "Mouse control of camera ON. Trackball control OFF\n";
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				oldCursorPos = vec2(width / 2.0f, height / 2.0f);
 			}
 			else {
 				cout << "Mouse control of camera OFF. Trackball control ON\n";
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}
 
 		}
@@ -225,12 +220,14 @@ void Display::key_callback(GLFWwindow* window, int key, int scancode, int action
 
 void Display::mouse_callback(GLFWwindow* window, int button, int action, int mods) {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-		// Set button pressed down state to true
-		// Get cursor position of press and set it to oldpos
-		// Project it to hemisphere
-		double cursorXPos, cursorYPos;
-		glfwGetCursorPos(window, &cursorXPos, &cursorYPos);
-		oldCursorPosProjected = projectToViewportHemisphere(cursorXPos, cursorYPos);
+		if (rotateMode == ROTATE_MODE_TRACKBALL) {
+			// Get cursor position of press and set it to oldpos
+			double cursorXPos, cursorYPos;
+			glfwGetCursorPos(window, &cursorXPos, &cursorYPos);
+			oldCursorPos.x = (float)cursorXPos;
+			oldCursorPos.y = (float)cursorYPos;
+		}
+
 		lmbPressed = true;
 		cout << "LMB pressed\n";
 	}
@@ -238,29 +235,66 @@ void Display::mouse_callback(GLFWwindow* window, int button, int action, int mod
 		cout << "LMB released\n";
 		lmbPressed = false;
 	}
-
 }
 
 void Display::cursor_callback(GLFWwindow* window, double xpos, double ypos) {
-	// Get current position of the cursor
+	// Get current and old position of the cursor 
 	// Project it to hemisphere
 	// Get angle and axis of rotation
 	// Rotate the object
-	if (lmbPressed) {
+	if (lmbPressed && rotateMode == ROTATE_MODE_TRACKBALL) {
 		vec3 currentPosProjected = projectToViewportHemisphere(xpos, ypos);
+		vec3 oldCursorPosProjected = projectToViewportHemisphere(oldCursorPos.x, oldCursorPos.y);
 		vec3 axisOfRotation = glm::cross(oldCursorPosProjected, currentPosProjected);
 		double angleOfRotation = asin(getMagnitude(axisOfRotation)) * (180.0f / PI);
 
-		if (glm::length(axisOfRotation) > 0.0000001f)
+		if (glm::length(axisOfRotation) > CLOSE_TO_ZERO)
 			axisOfRotation = glm::normalize(axisOfRotation);
 		teapot->rotate(angleOfRotation, axisOfRotation);
-
 		/*
 		GLDebugHelp::printVec3("Old Cursor Position", oldCursorPosProjected);
 		GLDebugHelp::printVec3("Current Cursor Position", currentPosProjected);
 		GLDebugHelp::printVec3("Axis of Rotation", axisOfRotation);
 		cout << endl;
 		*/
+	}
+	else if (rotateMode == ROTATE_MODE_CAMERA) {
+		// Get yaw angle value
+			// xNew - xOld
+		// Create yaw rotation matrix
+		// Get pitch angle value
+			// yNew - yOld
+		// Create pitch rotation matrix
+		// Multiply roll matrix (mat4 Identity matrix) * pitch matrix * yaw matrix in that order
+		// Rotate the up vector and the lookAt vector and set camera up
+
+		float deltaX = ((float)xpos - oldCursorPos.x) * MOUSE_SENSITIVITY_CAMERA;
+		yaw -= deltaX;
+		mat4 yawRotate = glm::rotate(mat4(1.0f), yaw * PI / 180.0f, Y_AXIS);
+
+		float deltaY = ((float)ypos - oldCursorPos.y) * MOUSE_SENSITIVITY_CAMERA;
+		pitch -= deltaY;
+		if (pitch > PITCH_ANGLE_LIMIT)
+			pitch = PITCH_ANGLE_LIMIT;
+		else if (pitch < -PITCH_ANGLE_LIMIT)
+			pitch = -PITCH_ANGLE_LIMIT;
+		mat4 pitchRotate = glm::rotate(mat4(1.0f), pitch * PI / 180.0f, X_AXIS);
+
+		cout << "Pitch Angle (Degrees): " << pitch << endl;
+
+		oldCursorPos.x = (float)xpos;
+		oldCursorPos.y = (float)ypos;
+
+		mat4 zyxRotate = pitchRotate * yawRotate;
+		vec4 upVec = glm::normalize(zyxRotate * vec4(camUp, 0));
+		// Translate directionVec to origin and rotate
+		vec4 directionVec = zyxRotate * vec4(camLookAt - camPos, 0);
+		// Translate back to original position
+		directionVec = directionVec + vec4(camPos, 0);
+
+		//camUp = vec3(upVec);
+		//camLookAt = vec3(directionVec);
+		viewMat = glm::lookAt(camPos, vec3(directionVec), vec3(upVec));
 	}
 }
 
